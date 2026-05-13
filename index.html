@@ -1,75 +1,160 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Projects</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.bw{background:#7A5C14;padding:12px;border-radius:3px}
+.cork{background:#C4975A;border-radius:2px;padding:16px;position:relative;height:620px;overflow:hidden}
+.cork::after{content:'';position:absolute;inset:0;pointer-events:none;background-image:repeating-linear-gradient(0deg,rgba(0,0,0,0.025) 0,rgba(0,0,0,0.025) 1px,transparent 1px,transparent 5px),repeating-linear-gradient(90deg,rgba(0,0,0,0.025) 0,rgba(0,0,0,0.025) 1px,transparent 1px,transparent 5px);z-index:0}
+.strings-svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.pin-card{position:absolute;z-index:3;cursor:pointer}
+.pin-card:hover .ci{transform:rotate(-1deg) scale(1.04);box-shadow:2px 4px 8px rgba(0,0,0,0.28)}
+.ci{background:#FFFEF0;border:0.5px solid #C4A96A;padding:8px 7px 7px;width:105px;border-radius:1px;box-shadow:1px 2px 5px rgba(0,0,0,0.2);transition:transform 0.15s,box-shadow 0.15s;position:relative;text-align:center}
+.pdot{width:11px;height:11px;border-radius:50%;background:#C0392B;border:2px solid #922B21;position:absolute;top:-6px;left:50%;transform:translateX(-50%);z-index:4;box-shadow:0 1px 3px rgba(0,0,0,0.35)}
+.ce{font-size:24px;display:block;margin-bottom:3px}
+.cn{font-size:10px;font-weight:700;color:#2C1A0E;font-family:monospace;text-transform:uppercase;letter-spacing:0.05em;line-height:1.2;margin-bottom:2px}
+.cr{font-size:8.5px;color:#7A5030;font-family:monospace;font-style:italic;line-height:1.3;margin-bottom:3px}
+.ctag{font-size:7.5px;font-weight:700;padding:1px 6px;border-radius:1px;font-family:monospace;letter-spacing:0.06em;display:inline-block}
+.tg{background:#D5F5E3;color:#1A5C32;border:0.5px solid #27AE60}
+.tr{background:#FADADD;color:#7B241C;border:0.5px solid #C0392B}
+.tb{background:#D6EAF8;color:#1A3A5C;border:0.5px solid #2980B9}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+.hub{position:absolute;z-index:5;left:50%;top:50%;transform:translate(-50%,-50%)}
+.hub-inner{background:#1A1208;border:2px solid #D4A017;padding:10px 14px;font-family:monospace;text-align:center;border-radius:1px;min-width:120px;box-shadow:0 0 0 4px rgba(212,160,23,0.12)}
+.hub-big{font-size:13px;font-weight:700;color:#F0C040;letter-spacing:0.1em}
+.hub-sub{font-size:8px;color:#888;margin-top:2px;letter-spacing:0.12em}
 
-        .container {
-            text-align: center;
-        }
+.sticky{position:absolute;z-index:3;font-family:monospace}
+.sticky-inner{padding:7px 9px;font-size:9px;line-height:1.5;box-shadow:1px 2px 3px rgba(0,0,0,0.15)}
+.sticky strong{display:block;font-size:10px;margin-bottom:2px;font-weight:700}
 
-        h1 {
-            color: white;
-            margin-bottom: 40px;
-            font-size: 2.5em;
-        }
+.modal-bg{display:none;position:absolute;inset:0;background:rgba(0,0,0,0.6);z-index:20;align-items:center;justify-content:center;border-radius:2px}
+.modal-bg.open{display:flex}
+.modal{background:#FFFEF0;border:1px solid #C4A96A;padding:18px;width:290px;border-radius:1px;font-family:monospace;position:relative;max-height:88%;overflow-y:auto}
+.modal h3{font-size:13px;font-weight:700;color:#2C1A0E;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:3px;padding-right:22px}
+.modal .mtag{font-size:8px;font-weight:700;padding:2px 7px;border-radius:1px;display:inline-block;margin-bottom:10px}
+.mrow{margin-bottom:7px}
+.mrow .ml{font-size:8px;color:#7A5030;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:1px}
+.mrow .mv{font-size:10.5px;color:#2C1A0E;line-height:1.5}
+.mrow a{color:#1A5276;text-decoration:underline;word-break:break-all;font-size:10px}
+.mdiv{border:none;border-top:0.5px dashed #C4A96A;margin:8px 0}
+.cls{position:absolute;top:10px;right:10px;background:none;border:none;font-family:monospace;font-size:13px;color:#922B21;cursor:pointer;font-weight:700}
+</style>
 
-        .projects {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+<h2 class="sr-only">Detective corkboard — Nishant's projects pinned with red string, click any card to inspect</h2>
 
-        a {
-            display: inline-block;
-            padding: 15px 40px;
-            background: white;
-            color: #667eea;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 600;
-            font-size: 1.1em;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        }
+<div class="bw">
+<div class="cork" id="cork">
+  <svg class="strings-svg" id="svg"></svg>
 
-        a:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        }
-    </style>
-</head>
+  <div class="sticky" style="left:12px;top:12px;transform:rotate(-2deg)">
+    <div class="sticky-inner" style="background:#FFFACD;border:0.5px solid #D4AC0D;color:#4A3728"><strong style="color:#922B21">CASE FILE</strong>active ops<br>click to inspect</div>
+  </div>
+  <div class="sticky" style="right:14px;top:10px;transform:rotate(2deg)">
+    <div class="sticky-inner" style="background:#FFFACD;border:0.5px solid #D4AC0D;color:#4A3728"><strong style="color:#1E8449">EVIDENCE</strong>8 projects<br>logged</div>
+  </div>
+  <div class="sticky" style="left:10px;bottom:16px;transform:rotate(1deg)">
+    <div class="sticky-inner" style="background:#E8F8F5;border:0.5px solid #27AE60;color:#1A5C32"><strong>GAME DEV</strong>6 components<br>modular arch</div>
+  </div>
+  <div class="sticky" style="right:12px;bottom:14px;transform:rotate(-1.5deg)">
+    <div class="sticky-inner" style="background:#FDEDEC;border:0.5px solid #E74C3C;color:#7B241C"><strong>LIVE</strong>2 deployed<br>vercel + gh</div>
+  </div>
 
-<body>
-    <div class="container">
-        <h1>My Projects</h1>
-        <div class="projects">
-            <a href="https://mrnishant1.github.io/modular_game_components/excape_game/">Escape the Maze</a>
-            <a href="https://mrnishant1.github.io/modular_game_components/symbiote/">symbiote</a>
-            <a href="https://mrnishant1.github.io/modular_game_components/3d_cube/">Cube</a>
-            <a href="https://mrnishant1.github.io/modular_game_components/grid_nav_mash/">Nav Mesh</a>
-            <a href="https://mrnishant1.github.io/modular_game_components/snake_game/">snake game</a>
-            <a href="https://mrnishant1.github.io/modular_game_components/maze_creator/">Maze Generator</a>
-        </div>
+  <div class="hub" id="hub">
+    <div class="hub-inner">
+      <div class="hub-big">NISHANT</div>
+      <div class="hub-sub">all projects</div>
     </div>
-</body>
+  </div>
 
-</html>
+  <div id="cards"></div>
+</div>
+
+<div class="modal-bg" id="modal" onclick="closeMod(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="cls" onclick="closeMod()">X</button>
+    <div id="mcontent"></div>
+  </div>
+</div>
+</div>
+
+<script>
+const P=[
+  {id:1,name:'Escape Maze',emoji:'🌀',role:'Pathfinding game',tag:'tg',tagL:'GAME',tech:'Vanilla JS, Canvas',learned:'Maze gen algorithms, event handling, collision',used:'HTML5 Canvas, requestAnimationFrame',duration:'~1 week',date:'2024',desc:'First-person style maze escape game. Navigate procedural corridors to find the exit.',url:'https://mrnishant1.github.io/modular_game_components/excape_game/'},
+  {id:2,name:'Symbiote',emoji:'🦠',role:'Entity simulation',tag:'tr',tagL:'GAME',tech:'Vanilla JS, Canvas',learned:'Entity lifecycle, organic movement, canvas compositing',used:'HTML5 Canvas, blend modes',duration:'~5 days',date:'2024',desc:'Organic symbiote simulation — entities grow, merge, and consume. Visually striking.',url:'https://mrnishant1.github.io/modular_game_components/symbiote/'},
+  {id:3,name:'3D Cube',emoji:'🧊',role:'3D renderer',tag:'tb',tagL:'ENGINE',tech:'Vanilla JS, Math',learned:'3D projection matrix, rotation transforms, perspective divide',used:'Canvas 2D, custom 3D math',duration:'3 days',date:'2024',desc:'Pure JS 3D cube renderer — no WebGL. Manual matrix math, perspective projection, wireframe.',url:'https://mrnishant1.github.io/modular_game_components/3d_cube/'},
+  {id:4,name:'Nav Mesh',emoji:'🗺️',role:'Pathfinding system',tag:'tg',tagL:'GAME',tech:'JS, A* algorithm',learned:'A* pathfinding, grid graphs, heuristic tuning',used:'Canvas, custom A* impl',duration:'4 days',date:'2024',desc:'Grid-based navigation mesh with A* pathfinding. Agents navigate around dynamic obstacles.',url:'https://mrnishant1.github.io/modular_game_components/grid_nav_mash/'},
+  {id:5,name:'Snake Game',emoji:'🐍',role:'Classic arcade',tag:'tg',tagL:'GAME',tech:'Vanilla JS, Canvas',learned:'Game loop architecture, collision grids, state machines',used:'requestAnimationFrame, Canvas',duration:'2 days',date:'2024',desc:'Clean snake game implementation. Focus on solid game loop and modular component design.',url:'https://mrnishant1.github.io/modular_game_components/snake_game/'},
+  {id:6,name:'Maze Generator',emoji:'🔲',role:'Procedural gen',tag:'tb',tagL:'ENGINE',tech:'JS, DFS/recursive backtrack',learned:'Recursive backtracker, wall removal logic, animation queuing',used:'Canvas, stack-based DFS',duration:'3 days',date:'2024',desc:'Animated maze generation using recursive backtracking. Watch the algorithm carve paths in real time.',url:'https://mrnishant1.github.io/modular_game_components/maze_creator/'},
+  {id:7,name:'BananaJS Trade',emoji:'🍌',role:'Trading sim RPG',tag:'tr',tagL:'LIVE',tech:'Vanilla JS, custom engine',learned:'Order book logic, spread mechanics, XP/quest systems, chart rendering',used:'Custom JS, Vercel deploy',duration:'3+ weeks',date:'2025',desc:'Gamified forex-style trading simulator. Live order book, quests, XP, win streaks, combo system. Surprisingly deep.',url:'https://trade-simulation-nine.vercel.app/'},
+  {id:8,name:'DoodlesDraw',emoji:'✏️',role:'Excalidraw clone',tag:'tr',tagL:'LIVE',tech:'Canvas, React or Vanilla JS',learned:'Free-draw canvas, shape tools, selection handles, export',used:'HTML Canvas, Vercel',duration:'ongoing',date:'2025',desc:'Excalidraw-inspired infinite canvas drawing tool. Freehand, shapes, selection — deployed live.',url:'https://doodlesdraw.vercel.app/'},
+];
+
+const positions=[
+  {l:18,t:75},{l:135,t:42},{l:268,t:30},{l:400,t:45},{l:508,t:75},
+  {l:540,t:250},{l:440,t:430},{l:140,t:440},{l:18,t:310}
+];
+
+const cont=document.getElementById('cards');
+const svg=document.getElementById('svg');
+const cardEls=[];
+
+P.forEach((p,i)=>{
+  const pos=positions[i]||{l:50+i*70,t:100};
+  const d=document.createElement('div');
+  d.className='pin-card';
+  d.style.left=pos.l+'px';
+  d.style.top=pos.t+'px';
+  d.innerHTML=`<div class="pdot"></div><div class="ci"><span class="ce">${p.emoji}</span><div class="cn">${p.name}</div><div class="cr">${p.role}</div><span class="ctag ${p.tag}">${p.tagL}</span></div>`;
+  d.onclick=()=>openMod(p);
+  cont.appendChild(d);
+  cardEls.push({el:d,pos});
+});
+
+function drawStrings(){
+  const cork=document.getElementById('cork');
+  const cw=cork.offsetWidth,ch=cork.offsetHeight;
+  svg.setAttribute('viewBox',`0 0 ${cw} ${ch}`);
+  svg.innerHTML='';
+  const hub=document.getElementById('hub');
+  const cr=cork.getBoundingClientRect();
+  const hr=hub.getBoundingClientRect();
+  const hx=hr.left-cr.left+hr.width/2;
+  const hy=hr.top-cr.top+hr.height/2;
+  cardEls.forEach((c,i)=>{
+    const pos=positions[i]||{l:50,t:100};
+    const ex=pos.l+52;
+    const ey=pos.t+52;
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',hx);line.setAttribute('y1',hy);
+    line.setAttribute('x2',ex);line.setAttribute('y2',ey);
+    line.setAttribute('stroke','#C0392B');
+    line.setAttribute('stroke-width','1.3');
+    line.setAttribute('stroke-opacity','0.7');
+    svg.appendChild(line);
+  });
+}
+
+setTimeout(drawStrings,100);
+window.addEventListener('resize',drawStrings);
+
+function openMod(p){
+  document.getElementById('mcontent').innerHTML=`
+    <h3>${p.emoji} ${p.name}</h3>
+    <span class="mtag ${p.tag}">${p.tagL}</span>
+    <div class="mrow"><div class="ml">What it is</div><div class="mv">${p.desc}</div></div>
+    <hr class="mdiv">
+    <div class="mrow"><div class="ml">Tech</div><div class="mv">${p.tech}</div></div>
+    <div class="mrow"><div class="ml">Tools & libs</div><div class="mv">${p.used}</div></div>
+    <hr class="mdiv">
+    <div class="mrow"><div class="ml">What I learned</div><div class="mv">${p.learned}</div></div>
+    <hr class="mdiv">
+    <div class="mrow"><div class="ml">Duration</div><div class="mv">${p.duration} &nbsp;·&nbsp; ${p.date}</div></div>
+    <div class="mrow"><div class="ml">Live link</div><div class="mv"><a href="${p.url}" target="_blank">${p.url}</a></div></div>
+  `;
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeMod(e){
+  if(!e||e.target===document.getElementById('modal'))
+    document.getElementById('modal').classList.remove('open');
+}
+</script>
