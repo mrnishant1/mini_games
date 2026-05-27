@@ -41,13 +41,34 @@ function isBlocked(cordinate) {
 
 class Node {
   constructor(x, y, g, h, parent) {
-    ((this.x = x),
-      (this.y = y),
-      (this.g = 0), //cost to move to this tile
-      (this.h = 0), //distance from here to target
-      (this.f = g + h),
-      (this.parent = parent || null));
+    this.x = x;
+    this.y = y;
+    this.g = g;
+    this.h = h;
+    this.f = g + h;
+    this.parent = parent || null;
   }
+}
+
+function toGrid(x, y) {
+  return {
+    x: Math.floor(x / CELL_SIZE),
+    y: Math.floor(y / CELL_SIZE),
+  };
+}
+
+function gridToPixel(gx, gy) {
+  return {
+    x: gx * CELL_SIZE + CELL_SIZE / 2,
+    y: gy * CELL_SIZE + CELL_SIZE / 2,
+  };
+}
+
+function isBlockedGrid(gx, gy) {
+  const cols = Math.floor(canvas.width / CELL_SIZE);
+  const rows = Math.floor(canvas.height / CELL_SIZE);
+  if (gx < 0 || gy < 0 || gx >= cols || gy >= rows) return true;
+  return blocked.has(hashIndex(gx, gy));
 }
 
 function Astar(startNode, target) {
@@ -90,7 +111,7 @@ function Astar(startNode, target) {
       let ny = current.y + dy;
       let nHash = hashIndex(nx, ny);
 
-      if (isBlocked({ x: nx, y: ny }) || closedHashes.has(nHash)) continue;
+      if (isBlockedGrid(nx, ny) || closedHashes.has(nHash)) continue;
 
       let gScore = current.g + 1; // Cumulative cost
       let hScore = calculateDistance(target, { x: nx, y: ny });
@@ -708,42 +729,147 @@ let player = null;
 const moveAudio = new Audio("./walk2.mp3");
 // moveAudio.loop = true;
 
-window.addEventListener("mousedown", (estart) => {
-  if (isBlocked({ x: estart.clientX, y: estart.clientY })) {
-    return;
+function clientToCanvas(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY,
+  };
+}
+
+const MOVE_INTERVAL_MS = 50;
+const KEY_DIR = {
+  KeyW: { gx: 0, gy: -1 },
+  KeyA: { gx: -1, gy: 0 },
+  KeyS: { gx: 0, gy: 1 },
+  KeyD: { gx: 1, gy: 0 },
+};
+const keysDown = new Set();
+let keyboardInterval = null;
+
+function stopClickMovement() {
+  if (myInterval) {
+    clearInterval(myInterval);
+    myInterval = null;
   }
-  target_coordinate = { x: estart.clientX, y: estart.clientY };
-  player = new Game_object(target_coordinate.x, target_coordinate.y, ctx);
-  player.draw();
+}
+
+function stopKeyboardMovement() {
+  if (keyboardInterval) {
+    clearInterval(keyboardInterval);
+    keyboardInterval = null;
+  }
+}
+
+function checkWin() {
+  if (enemy.gameWon) return;
+  if (enemy.posX > 550 && enemy.posY > 500) {
+    alert("Won");
+    enemy.gameWon = true;
+    stopClickMovement();
+    stopKeyboardMovement();
+    window.location.reload();
+  }
+}
+
+function tryMovePlayer(gridDx, gridDy) {
+  if (enemy.gameWon || (gridDx === 0 && gridDy === 0)) return false;
+
+  const grid = toGrid(enemy.posX, enemy.posY);
+  const nextGx = grid.x + gridDx;
+  const nextGy = grid.y + gridDy;
+
+  if (isBlockedGrid(nextGx, nextGy)) return false;
+
+  const pixel = gridToPixel(nextGx, nextGy);
+  enemy.moveToCoordinate(pixel.x, pixel.y);
+  checkWin();
+  moveAudio.play().catch(() => {});
+  return true;
+}
+
+function getHeldGridDelta() {
+  let gx = 0;
+  let gy = 0;
+  for (const key of keysDown) {
+    const dir = KEY_DIR[key];
+    if (dir) {
+      gx += dir.gx;
+      gy += dir.gy;
+    }
+  }
+  return {
+    gx: Math.sign(gx),
+    gy: Math.sign(gy),
+  };
+}
+
+function tickKeyboardMovement() {
+  if (enemy.gameWon) return;
+  const { gx, gy } = getHeldGridDelta();
+  tryMovePlayer(gx, gy);
+}
+
+function startKeyboardMovement() {
+  if (keyboardInterval) return;
+  keyboardInterval = setInterval(tickKeyboardMovement, MOVE_INTERVAL_MS);
+}
+
+function onKeyDown(e) {
+  if (!KEY_DIR[e.code]) return;
+  e.preventDefault();
+  stopClickMovement();
+  keysDown.add(e.code);
+  startKeyboardMovement();
+}
+
+function onKeyUp(e) {
+  if (!KEY_DIR[e.code]) return;
+  keysDown.delete(e.code);
+  if (keysDown.size === 0) stopKeyboardMovement();
+}
+
+window.addEventListener("keydown", onKeyDown);
+window.addEventListener("keyup", onKeyUp);
+window.addEventListener("blur", () => {
+  keysDown.clear();
+  stopKeyboardMovement();
+});
+
+canvas.addEventListener("mousedown", (estart) => {
+  const click = clientToCanvas(estart.clientX, estart.clientY);
+  if (isBlocked(click)) return;
+
+  stopKeyboardMovement();
+  keysDown.clear();
+
+  target_coordinate = click;
+  const start = toGrid(enemy.posX, enemy.posY);
+  const goal = toGrid(target_coordinate.x, target_coordinate.y);
 
   const path = Astar(
-    new Node(
-      enemy.posX,
-      enemy.posY,
-      0,
-      calculateDistance(target_coordinate, { x: enemy.posX, y: enemy.posY }),
-    ),
-    target_coordinate,
+    new Node(start.x, start.y, 0, calculateDistance(goal, start), null),
+    goal,
   );
 
-  if (!path) return; // Safety check
+  if (!path || path.length === 0) return;
 
-  //Clear existing movement
-  if (window.myInterval) clearInterval(window.myInterval);
+  stopClickMovement();
 
-  window.myInterval = setInterval(() => {
+  myInterval = setInterval(() => {
     if (path.length === 0) {
-      clearInterval(window.myInterval);
+      stopClickMovement();
       return;
     }
-    let nextTile = path.pop();
+    const nextTile = path.pop();
+    const pixel = gridToPixel(nextTile.x, nextTile.y);
     if (enemy.gameWon) return;
-    enemy.moveToCoordinate(nextTile.x, nextTile.y);
-    if (enemy.posX > 550 && enemy.posY > 500) {
-      alert("Won");
-      enemy.gameWon = true;
-      window.location.reload();
-    }
-    moveAudio.play();
-  }, 10);
+    enemy.moveToCoordinate(pixel.x, pixel.y);
+    checkWin();
+    moveAudio.play().catch(() => {});
+  }, MOVE_INTERVAL_MS);
 });
+
+

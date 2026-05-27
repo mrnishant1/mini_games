@@ -4,15 +4,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Escape the Maze</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
-<body style="width: 70vw; height: 70vh; background-color: black;">
-    <div style=" width: 100%; height: 100%;">
-        <canvas id="goap_game"
-            style="background-color: rgb(88, 85, 85);"></canvas>
-        <script src="./index.js" type="module"></script>
+<body>
+    <div class="app">
+        <header class="header">
+            <div>
+                <h1>Escape <span>Maze</span></h1>
+                <p class="tagline">Reach the exit before the guards spot you.</p>
+            </div>
+            <div class="stats">
+                <!-- <div class="stat">
+                    <span class="stat-label">Time</span>
+                    <span class="stat-value" id="timer">0:00</span>
+                </div> -->
+                <div class="stat">
+                    <span class="stat-label">Guards</span>
+                    <span class="stat-value stat-value--accent" id="guard-count">10</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="main">
+            <aside class="panel">
+                <section>
+                    <h2>How to play</h2>
+                    <ul>
+                        <li>Click the maze to pathfind, or use W A S D to move step by step.</li>
+                        <li>Stay inside your light radius — walls fade in the dark.</li>
+                        <li>Avoid red vision cones; they trigger game over.</li>
+                        <li>Reach the green exit zone to win.</li>
+                    </ul>
+                </section>
+                <section>
+                    <h2>Legend</h2>
+                    <ul>
+                        <li><span class="legend-swatch legend-swatch--player"></span> You</li>
+                        <li><span class="legend-swatch legend-swatch--exit"></span> Exit</li>
+                        <li><span class="legend-swatch legend-swatch--guard"></span> Guard vision</li>
+                        <li><span class="legend-swatch legend-swatch--wall"></span> Walls</li>
+                    </ul>
+                </section>
+                <p class="status-line" id="game-status">Click the maze to move.</p>
+            </aside>
+
+            <div class="game-wrap">
+                <div class="canvas-frame">
+                    <canvas id="goap_game" width="600" height="600" tabindex="0"></canvas>
+                    <div id="game-overlay" class="overlay" hidden>
+                        <div class="overlay-card">
+                            <h2 id="overlay-title"></h2>
+                            <p id="overlay-message"></p>
+                            <button type="button" id="overlay-btn">Play again</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
+    <script src="./index.js"></script>
 </body>
 
 </html>
