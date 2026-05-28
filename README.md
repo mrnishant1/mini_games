@@ -1,4 +1,4 @@
 # Symbiote following cursor effect 
-[https://mrnishant1.github.io/modular_game_components/]
-[https://mrnishant1.github.io/modular_game_components/excape_game/]
+[https://mrnishant1.github.io/mini_games/]
+[https://mrnishant1.github.io/mini_games/excape_game/]
 
