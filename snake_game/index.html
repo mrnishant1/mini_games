@@ -3,15 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Snake</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        *{
-            scrollbar-width: none;
+        :root {
+            --bg-deep: #0c0f14;
+            --bg-mid: #141a24;
+            --surface: #1c2433;
+            --surface-border: #2d3a52;
+            --accent: #3dd68c;
+            --accent-dim: #2a9d63;
+            --accent-glow: rgba(61, 214, 140, 0.35);
+            --text: #e8edf5;
+            --text-muted: #8b9bb8;
+            --danger: #f87171;
+            --food: #fbbf24;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: "Outfit", system-ui, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(61, 214, 140, 0.12), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(45, 58, 82, 0.4), transparent);
+            pointer-events: none;
+        }
+
+        .game-shell {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+            padding: 1.5rem;
+        }
+
+        .game-header {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .title-block h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+        }
+
+        .title-block p {
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .stats {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .stat-pill {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 999px;
+            color: var(--text-muted);
+        }
+
+        .stat-pill strong {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .board-wrap {
+            position: relative;
+            padding: 0.5rem;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 1rem;
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+                0 24px 48px rgba(0, 0, 0, 0.45),
+                0 0 60px var(--accent-glow);
+        }
+
+        #snake_game {
+            display: block;
+            border-radius: 0.5rem;
+        }
+
+        .controls-hint {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .key {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.75rem;
+            height: 1.75rem;
+            padding: 0 0.35rem;
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.7rem;
+            font-weight: 500;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 0.35rem;
+            color: var(--text);
+            box-shadow: 0 2px 0 var(--bg-deep);
+        }
+
+        #game-over {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(12, 15, 20, 0.75);
+            backdrop-filter: blur(6px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.25s ease, visibility 0.25s ease;
+        }
+
+        #game-over.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            text-align: center;
+            padding: 2rem 2.5rem;
+            background: var(--surface);
+            border: 1px solid var(--surface-border);
+            border-radius: 1rem;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+
+        #game-over.visible .modal {
+            transform: scale(1);
+        }
+
+        .modal h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal .score-line {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .modal .score-line span {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        #restart-btn {
+            font-family: "Outfit", sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.65rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: var(--accent);
+            color: var(--bg-deep);
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.15s ease;
+        }
+
+        #restart-btn:hover {
+            background: #52e89a;
+            transform: translateY(-1px);
+        }
+
+        #restart-btn:active {
+            transform: translateY(0);
         }
     </style>
 </head>
-<body style="width: 100vw; height: 100vh; overflow:hidden;">
-    <canvas id="snake_game" style="position: relative;left: 10%; top: 10%; border: 5px solid black; "></canvas>
+<body>
+    <div class="game-shell">
+        <header class="game-header">
+            <div class="title-block">
+                <h1>Snake</h1>
+                <p>Eat food. Grow longer. Don’t crash.</p>
+            </div>
+            <div class="stats">
+                <div class="stat-pill">Score <strong id="score">0</strong></div>
+            </div>
+        </header>
+
+        <div class="board-wrap">
+            <canvas id="snake_game"></canvas>
+        </div>
+
+        <p class="controls-hint">
+            <span class="key">↑</span>
+            <span class="key">↓</span>
+            <span class="key">←</span>
+            <span class="key">→</span>
+            arrow keys to move
+        </p>
+    </div>
+
+    <div id="game-over" aria-hidden="true">
+        <div class="modal">
+            <h2>Game Over</h2>
+            <p class="score-line">Final score: <span id="final-score">0</span></p>
+            <button type="button" id="restart-btn">Play Again</button>
+        </div>
+    </div>
+
     <script src="index.js"></script>
     <script src="implication.js"></script>
 </body>

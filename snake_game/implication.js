@@ -26,4 +26,8 @@ setInterval(() => {
   animate()
 }, 300);
 
+document.getElementById("restart-btn")?.addEventListener("click", () => {
+  location.reload();
+});
+
 // requestAnimationFrame(animate);
